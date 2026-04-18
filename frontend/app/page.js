@@ -23,6 +23,13 @@ const fadeVariants = {
   show: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
 }
 
+const trustMarks = [
+  { icon: Calendar, label: 'Google Calendar' },
+  { icon: Video, label: 'Google Meet' },
+  { icon: Mail, label: 'Gmail' },
+  { icon: FileText, label: 'Google Docs' },
+]
+
 export default function Home() {
   const router = useRouter()
 
@@ -98,19 +105,50 @@ export default function Home() {
 
       {/* Trust Badge Section */}
       <motion.section 
-        className="py-10 border-y border-gray-100 bg-gray-50/50"
+        className="py-14 border-y border-gray-100 bg-gradient-to-b from-gray-50 to-white"
         initial="hidden"
         whileInView="show"
         viewport={{ once: true }}
         variants={fadeVariants}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-6 uppercase tracking-wider">Integrates seamlessly with your favorite tools</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 font-bold text-xl cursor-default"><Calendar className="w-6 h-6"/> Google Calendar</motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 font-bold text-xl cursor-default"><Video className="w-6 h-6"/> Google Meet</motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 font-bold text-xl cursor-default"><Mail className="w-6 h-6"/> Gmail</motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 font-bold text-xl cursor-default"><FileText className="w-6 h-6"/> Google Docs</motion.div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.28em]">Integrates seamlessly with your favorite tools</p>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[2rem] border border-gray-200 bg-white/80 shadow-[0_20px_80px_rgba(15,23,42,0.08)]">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white via-white/90 to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/90 to-transparent z-10" />
+
+            <div className="marquee-group py-8 space-y-4">
+              <div className="marquee-track marquee-track-left">
+                {[...trustMarks, ...trustMarks].map((item, index) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={`top-${item.label}-${index}`} className="marquee-pill">
+                      <span className="marquee-icon">
+                        <Icon className="w-4 h-4" />
+                      </span>
+                      <span>{item.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="marquee-track marquee-track-right">
+                {[...trustMarks, ...trustMarks].map((item, index) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={`bottom-${item.label}-${index}`} className="marquee-pill marquee-pill-ghost">
+                      <span className="marquee-icon">
+                        <Icon className="w-4 h-4" />
+                      </span>
+                      <span>{item.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </motion.section>
