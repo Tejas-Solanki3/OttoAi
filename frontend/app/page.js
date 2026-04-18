@@ -92,7 +92,7 @@ export default function Home() {
               Get Started <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
-          <motion.p variants={itemVariants} className="mt-4 text-sm text-gray-500">Free. Open Source. Powered by your Google account.</motion.p>
+          <motion.p variants={itemVariants} className="mt-4 text-sm text-gray-500">Powered by your Google account.</motion.p>
         </motion.div>
       </section>
 
@@ -178,7 +178,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-8 text-center md:text-left text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} OttoAi. Building open source tools.
+            &copy; {new Date().getFullYear()} OttoAi. Built for your Google workflow.
           </div>
         </div>
       </footer>

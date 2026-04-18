@@ -108,14 +108,70 @@ export default function AppShell({ children }) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-white md:m-2 md:rounded-xl md:border md:border-gray-200 md:shadow-sm overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-             <div className="w-6 h-6 bg-black rounded-md flex items-center justify-center">
-              <span className="text-white text-xs font-bold">O</span>
+        <header className="md:hidden bg-white border-b border-gray-200 px-4 pt-3 pb-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-6 h-6 bg-black rounded-md flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-bold">O</span>
+              </div>
+              <span className="font-semibold truncate">OttoAi</span>
             </div>
-            <span className="font-semibold">OttoAi</span>
+
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-2 py-1.5 hover:bg-gray-100 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-semibold flex-shrink-0 text-sm">
+                {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "U"}
+              </div>
+              <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${profileOpen ? '' : 'rotate-180'}`} />
+            </button>
           </div>
-          <button onClick={handleSignOut} className="text-sm text-red-600 font-medium">Sign Out</button>
+
+          {profileOpen && (
+            <div className="mt-3 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
+                <p className="font-semibold text-gray-900 text-sm">{session?.user?.name || "User"}</p>
+                <p className="text-xs text-gray-500 mt-0.5 truncate">{session?.user?.email || ""}</p>
+              </div>
+              <div className="p-1">
+                <button
+                  onClick={() => { setProfileOpen(false); router.push("/profile") }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  Edit Profile
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
+
+          <nav className="mt-3 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {nav.map((item) => {
+              const active = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard")
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium transition-colors border ${
+                    active
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {item.icon}
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
         </header>
 
         <div className="flex-1 overflow-auto bg-gray-50/30">
