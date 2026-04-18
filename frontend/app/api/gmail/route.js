@@ -40,10 +40,10 @@ function categorizeEmail(from, subject) {
   return 'Other';
 }
 
-async function summarizeWithGemini(emails) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  console.log("[Gemini] API key present:", !!apiKey, "| Emails count:", emails.length);
-  if (!apiKey) return "⚠️ GEMINI_API_KEY is not configured. Add it to your Vercel environment variables.";
+async function summarizeWithMistral(emails) {
+  const mistralApiKey = process.env.MISTRAL_API_KEY || process.env.GEMINI_API_KEY;
+  console.log("[Mistral] API key present:", !!mistralApiKey, "| Emails count:", emails.length);
+  if (!mistralApiKey) return "⚠️ MISTRAL_API_KEY is not configured.";
   if (emails.length === 0) return null;
 
   const emailList = emails.slice(0, 15).map((e, i) => 
@@ -51,13 +51,7 @@ async function summarizeWithGemini(emails) {
   ).join('\n\n');
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `You are a smart email assistant. Analyze these ${emails.length} emails and produce a clean, structured briefing.
+    const prompt = `You are a smart email assistant. Analyze these ${emails.length} emails and produce a clean, structured briefing.
 
 Rules:
 - Group emails by category (🔒 Security, 🎵 Offers & Promotions, 💻 Developer, 🤖 AI, 📩 Other)
@@ -66,20 +60,34 @@ Rules:
 - Be concise. Max 15 lines total. No filler.
 
 Emails:
-${emailList}` }] }],
-          generationConfig: { maxOutputTokens: 500, temperature: 0.3 }
-        })
-      }
-    );
+${emailList}`;
+
+    const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${mistralApiKey}`,
+      },
+      body: JSON.stringify({
+        model: process.env.MISTRAL_MODEL || "mistral-small-latest",
+        messages: [
+          { role: "system", content: "You are a concise and structured email assistant." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 500,
+      })
+    });
+
     if (res.ok) {
       const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      return data.choices?.[0]?.message?.content?.trim() || null;
     } else {
-      console.error("Gemini failed Details:", await res.text());
+      console.error("Mistral failed Details:", await res.text());
       return "⚠️ Expected AI summary but the AI engine hit a rate limit or error (Quota exhausted). Please try again later.";
     }
   } catch (e) { 
-    console.error("Gemini summary failed:", e); 
+    console.error("Mistral summary failed:", e); 
     return "⚠️ Failed to connect to AI engine.";
   }
 }
@@ -164,7 +172,7 @@ export async function GET(req) {
     });
 
     // Generate AI summary
-    const ai_summary = await summarizeWithGemini(emails);
+    const ai_summary = await summarizeWithMistral(emails);
 
     return Response.json({
       summary: {

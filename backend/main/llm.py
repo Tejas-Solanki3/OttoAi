@@ -4,21 +4,23 @@ import logging
 logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = None
+MISTRAL_API_KEY = None
 
-def _load_gemini_key():
-    global GEMINI_API_KEY
+def _load_api_keys():
+    global GEMINI_API_KEY, MISTRAL_API_KEY
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-    if not GEMINI_API_KEY:
-        env_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend", ".env.local")
-        if os.path.exists(env_path):
-            with open(env_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("GEMINI_API_KEY="):
-                        GEMINI_API_KEY = line.split("=", 1)[1]
-                        break
+    MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+    env_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend", ".env.local")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("GEMINI_API_KEY=") and not GEMINI_API_KEY:
+                    GEMINI_API_KEY = line.split("=", 1)[1]
+                elif line.startswith("MISTRAL_API_KEY=") and not MISTRAL_API_KEY:
+                    MISTRAL_API_KEY = line.split("=", 1)[1]
 
-_load_gemini_key()
+_load_api_keys()
 
 
 def _extract_sender_name(from_field: str) -> str:
@@ -28,14 +30,15 @@ def _extract_sender_name(from_field: str) -> str:
 
 
 async def summarize_text(source: str, raw_text: str) -> str:
-    """Summarize email text using Gemini API, with a clean fallback."""
+    """Summarize email text using Mistral API, with a clean fallback."""
     if not raw_text or not raw_text.strip():
         return "No new content to summarize."
 
     lines = raw_text.strip().split("\n")
 
-    # Try Gemini API first
-    if GEMINI_API_KEY:
+    # Try Mistral API first. Backward compatibility: user may store a Mistral key in GEMINI_API_KEY.
+    mistral_key = MISTRAL_API_KEY or GEMINI_API_KEY
+    if mistral_key:
         try:
             import httpx
             prompt = f"""You are a smart email assistant. Analyze these {len(lines)} emails and produce a clean, structured briefing.
@@ -51,19 +54,28 @@ Emails:
 
             async with httpx.AsyncClient(timeout=15) as client:
                 res = await client.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}",
+                    "https://api.mistral.ai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {mistral_key}",
+                        "Content-Type": "application/json",
+                    },
                     json={
-                        "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"temperature": 0.5, "maxOutputTokens": 500}
+                        "model": os.getenv("MISTRAL_MODEL", "mistral-small-latest"),
+                        "messages": [
+                            {"role": "system", "content": "You are a concise and structured email assistant."},
+                            {"role": "user", "content": prompt},
+                        ],
+                        "temperature": 0.5,
+                        "max_tokens": 500,
                     }
                 )
                 if res.status_code == 200:
                     data = res.json()
-                    ai_text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                    ai_text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
                     if ai_text:
                         return ai_text.strip()
         except Exception as e:
-            logger.warning(f"[LLM] Gemini call failed, using fallback: {e}")
+            logger.warning(f"[LLM] Mistral call failed, using fallback: {e}")
 
     # Fallback: clean categorized summary
     categories = {}

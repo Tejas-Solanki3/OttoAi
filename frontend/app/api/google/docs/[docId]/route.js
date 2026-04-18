@@ -63,9 +63,9 @@ function extractText(doc) {
   return text.trim();
 }
 
-async function summarizeWithGemini(title, text) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return "AI summary unavailable (no API key configured).";
+async function summarizeWithMistral(title, text) {
+  const mistralApiKey = process.env.MISTRAL_API_KEY || process.env.GEMINI_API_KEY;
+  if (!mistralApiKey) return "AI summary unavailable (no API key configured).";
 
   const truncated = text.slice(0, 4000);
   if (!truncated || truncated.length < 20) return "Document is empty or too short to summarize.";
@@ -76,17 +76,22 @@ async function summarizeWithGemini(title, text) {
     try {
       if (attempt > 0) await new Promise(r => setTimeout(r, 3000)); // wait 3s before retry
 
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { maxOutputTokens: 200, temperature: 0.3 }
-          })
-        }
-      );
+      const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${mistralApiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env.MISTRAL_MODEL || "mistral-small-latest",
+          messages: [
+            { role: "system", content: "You summarize documents clearly and concisely." },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.3,
+          max_tokens: 200,
+        })
+      });
 
       if (res.status === 429) {
         if (attempt === 0) continue; // retry once
@@ -95,7 +100,7 @@ async function summarizeWithGemini(title, text) {
       if (!res.ok) return "Summary generation failed (API error).";
 
       const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "No summary generated.";
+      return data.choices?.[0]?.message?.content?.trim() || "No summary generated.";
     } catch (e) {
       if (attempt === 0) continue;
       return "Summary generation failed.";
@@ -147,7 +152,7 @@ export async function GET(req, { params }) {
     const title = docData.title || "Untitled";
 
     // Generate AI summary
-    const summary = await summarizeWithGemini(title, text);
+    const summary = await summarizeWithMistral(title, text);
 
     return Response.json({
       id: docId,
