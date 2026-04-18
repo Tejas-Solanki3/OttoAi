@@ -1,10 +1,10 @@
 'use client'
 
 import { Calendar, Clock, Video, Plus, X, Loader2, ExternalLink, Trash2, Inbox } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function Bookings() {
+function BookingsContent() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('upcoming')
   const [events, setEvents] = useState([])
@@ -310,5 +310,13 @@ export default function Bookings() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function Bookings() {
+  return (
+    <Suspense fallback={<div className="max-w-5xl animate-pulse"><div className="h-8 bg-gray-200 rounded w-48 mb-6"></div></div>}>
+      <BookingsContent />
+    </Suspense>
   )
 }
