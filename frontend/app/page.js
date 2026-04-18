@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Video, Calendar } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Marquee } from '../components/ui/marquee'
 
