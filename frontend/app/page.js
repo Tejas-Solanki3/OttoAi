@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Calendar, Mail, Video, FileText, CheckCircle2 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Marquee } from '../components/ui/marquee'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -22,13 +23,6 @@ const fadeVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
 }
-
-const trustMarks = [
-  { icon: Calendar, label: 'Google Calendar' },
-  { icon: Video, label: 'Google Meet' },
-  { icon: Mail, label: 'Gmail' },
-  { icon: FileText, label: 'Google Docs' },
-]
 
 export default function Home() {
   const router = useRouter()
@@ -120,35 +114,20 @@ export default function Home() {
             <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white via-white/90 to-transparent z-10" />
             <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/90 to-transparent z-10" />
 
-            <div className="marquee-group py-8 space-y-4">
-              <div className="marquee-track marquee-track-left">
-                {[...trustMarks, ...trustMarks].map((item, index) => {
-                  const Icon = item.icon
-                  return (
-                    <div key={`top-${item.label}-${index}`} className="marquee-pill">
-                      <span className="marquee-icon">
-                        <Icon className="w-4 h-4" />
-                      </span>
-                      <span>{item.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="marquee-track marquee-track-right">
-                {[...trustMarks, ...trustMarks].map((item, index) => {
-                  const Icon = item.icon
-                  return (
-                    <div key={`bottom-${item.label}-${index}`} className="marquee-pill marquee-pill-ghost">
-                      <span className="marquee-icon">
-                        <Icon className="w-4 h-4" />
-                      </span>
-                      <span>{item.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <Marquee pauseOnHover duration={24} fade fadeAmount={12} className="py-8">
+              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
+                <Calendar className="w-4 h-4 text-gray-600" /> Google Calendar
+              </span>
+              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
+                <Video className="w-4 h-4 text-gray-600" /> Google Meet
+              </span>
+              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
+                <Mail className="w-4 h-4 text-gray-600" /> Gmail
+              </span>
+              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
+                <FileText className="w-4 h-4 text-gray-600" /> Google Docs
+              </span>
+            </Marquee>
           </div>
         </div>
       </motion.section>
