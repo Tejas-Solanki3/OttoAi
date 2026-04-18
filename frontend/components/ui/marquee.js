@@ -24,21 +24,21 @@ export function Marquee({
         {`
         @keyframes scroll {
           from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
+          to { transform: translateX(-25%); }
         }
 
         @keyframes scroll-reverse {
-          from { transform: translateX(-50%); }
+          from { transform: translateX(-25%); }
           to { transform: translateX(0); }
         }
 
         @keyframes scroll-y {
           from { transform: translateY(0); }
-          to { transform: translateY(-50%); }
+          to { transform: translateY(-25%); }
         }
 
         @keyframes scroll-y-reverse {
-          from { transform: translateY(-50%); }
+          from { transform: translateY(-25%); }
           to { transform: translateY(0); }
         }
 
@@ -94,6 +94,22 @@ export function Marquee({
           {items.map((item, index) => (
             <div
               key={`second-${index}`}
+              className={cn("flex shrink-0", isVertical && "w-full")}
+            >
+              {item}
+            </div>
+          ))}
+          {items.map((item, index) => (
+            <div
+              key={`third-${index}`}
+              className={cn("flex shrink-0", isVertical && "w-full")}
+            >
+              {item}
+            </div>
+          ))}
+          {items.map((item, index) => (
+            <div
+              key={`fourth-${index}`}
               className={cn("flex shrink-0", isVertical && "w-full")}
             >
               {item}
