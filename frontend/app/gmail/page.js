@@ -247,11 +247,11 @@ export default function GmailAssistant() {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Emails</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{gmailData.total_emails_processed}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{gmailData.emails?.length || 0}</p>
             </div>
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Last Synced</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{getTimeAgo(gmailData.date_summarized)}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{getTimeAgo(gmailData.last_synced)}</p>
             </div>
             <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Agent</p>
@@ -262,13 +262,15 @@ export default function GmailAssistant() {
           </div>
 
           {/* AI Summary */}
-          <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-900">AI Summary</span>
+          {gmailData.ai_summary && (
+            <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold text-blue-900">AI Summary</span>
+              </div>
+              <p className="text-sm text-blue-900/80 leading-relaxed whitespace-pre-wrap font-medium">{gmailData.ai_summary}</p>
             </div>
-            <p className="text-sm text-blue-900/80 leading-relaxed whitespace-pre-wrap font-medium">{gmailData.summary_text}</p>
-          </div>
+          )}
 
           {/* Email List */}
           {gmailData.emails && gmailData.emails.length > 0 && (
