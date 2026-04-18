@@ -1,7 +1,7 @@
 import { NextResponse as Response } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../../auth/[...nextauth]/route";
-import clientPromise from "../../../../../../lib/mongodb";
+import { authOptions } from "../../../auth/[...nextauth]/route";
+import clientPromise from "../../../../../lib/mongodb";
 
 async function refreshAccessToken(account, db) {
   try {
