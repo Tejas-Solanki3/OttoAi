@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Calendar, Mail, Video, FileText, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Marquee } from '../components/ui/marquee'
 
@@ -110,23 +110,12 @@ export default function Home() {
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-[0.28em]">Integrates seamlessly with your favorite tools</p>
           </div>
 
-          <div className="relative overflow-hidden rounded-[2rem] border border-gray-200 bg-white/80 shadow-[0_20px_80px_rgba(15,23,42,0.08)]">
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white via-white/90 to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/90 to-transparent z-10" />
-
-            <Marquee pauseOnHover duration={24} fade fadeAmount={12} className="py-8">
-              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
-                <Calendar className="w-4 h-4 text-gray-600" /> Google Calendar
-              </span>
-              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
-                <Video className="w-4 h-4 text-gray-600" /> Google Meet
-              </span>
-              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
-                <Mail className="w-4 h-4 text-gray-600" /> Gmail
-              </span>
-              <span className="mx-4 flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-base font-semibold text-gray-800 shadow-sm whitespace-nowrap">
-                <FileText className="w-4 h-4 text-gray-600" /> Google Docs
-              </span>
+          <div className="relative overflow-hidden py-2">
+            <Marquee pauseOnHover duration={24} fade fadeAmount={12} className="py-4">
+              <span className="mx-10 text-2xl font-medium tracking-tight text-gray-700 whitespace-nowrap">Google Calendar</span>
+              <span className="mx-10 text-2xl font-medium tracking-tight text-gray-700 whitespace-nowrap">Google Meet</span>
+              <span className="mx-10 text-2xl font-medium tracking-tight text-gray-700 whitespace-nowrap">Gmail</span>
+              <span className="mx-10 text-2xl font-medium tracking-tight text-gray-700 whitespace-nowrap">Google Docs</span>
             </Marquee>
           </div>
         </div>
