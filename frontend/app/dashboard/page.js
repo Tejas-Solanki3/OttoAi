@@ -194,6 +194,11 @@ export default function DashboardPage() {
               enabled={isEnabled(installedApps, 'google-docs')}
               description="AI-powered doc summaries"
             />
+              <IntegrationRow
+                name="Google Fit"
+                enabled={healthConnected}
+                description="Daily steps and health metrics"
+              />
           </div>
         </div>
       </div>

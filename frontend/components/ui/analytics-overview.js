@@ -63,6 +63,20 @@ export function AnalyticsOverview() {
 
   const featureUsage = data?.featureUsage || []
   const dailyUsage = data?.dailyUsage || []
+
+    const hasData = featureUsage.length > 0 || dailyUsage.length > 0 || data?.browserData?.length > 0
+
+    if (!hasData) {
+      return (
+        <section className="space-y-4 rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-blue-900">Google Analytics</h2>
+            <p className="text-sm text-blue-700">GA4 is connected and ready! Once you add the Measurement ID to Vercel and deploy, tracking will begin collecting data from your users.</p>
+          </div>
+        </section>
+      )
+    }
+
   const browserData = (data?.browserData || []).map((item) => ({
     ...item,
     color: defaultBrowserColors[item.name] || '#9ca3af',
