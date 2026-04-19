@@ -30,17 +30,11 @@ export default function DashboardPage() {
   const [appUsageError, setAppUsageError] = useState(null)
 
   const handleReconnectPermissions = async () => {
-    await signIn(
-      'google',
-      { callbackUrl: '/dashboard' },
-      {
-        prompt: 'consent',
-        access_type: 'offline',
-        response_type: 'code',
-        scope:
-          'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/fitness.activity.read',
-      }
-    )
+    await signIn('google', {
+      callbackUrl: '/dashboard',
+      prompt: 'consent',
+      access_type: 'offline',
+    })
   }
 
   const loadLivePanels = async () => {
