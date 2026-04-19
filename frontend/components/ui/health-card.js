@@ -33,12 +33,12 @@ export function HealthCard({ stats, loading, error, connected, needsReauth, onRe
         <p className="text-xs text-gray-500">
           {error || "Connect Google Fit to track steps"}
         </p>
-        {needsReauth && typeof onReconnect === "function" && (
+        {typeof onReconnect === "function" && !connected && (
           <button
             onClick={onReconnect}
             className="mt-3 inline-flex items-center rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
           >
-            Reconnect Google Fit
+            {needsReauth ? 'Reconnect Google Fit' : 'Try reconnecting'}
           </button>
         )}
       </div>

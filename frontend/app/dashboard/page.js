@@ -240,7 +240,7 @@ export default function DashboardPage() {
           needsReauth={healthNeedsReauth}
           onReconnect={handleReconnectGoogleFit}
         />
-        <MiniChart title="Automation Index" suffix={hasUsageData ? 'm' : ''} data={chartData} />
+        <MiniChart title="Automation Index" suffix={hasUsageData ? 'm' : ''} data={chartData} className="max-w-none" />
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
