@@ -43,8 +43,8 @@ export default function DashboardPage() {
 
     try {
       const [healthRes, appUsageRes] = await Promise.all([
-        fetch('/api/health'),
-        fetch('/api/app-usage'),
+        fetch('/api/health', { cache: 'no-store' }),
+        fetch('/api/app-usage', { cache: 'no-store' }),
       ])
 
       const healthData = await healthRes.json().catch(() => ({}))
@@ -88,12 +88,12 @@ export default function DashboardPage() {
 
     try {
       const [prefsRes, gmailRes, docsRes, bookingsRes, healthRes, appUsageRes] = await Promise.all([
-        fetch('/api/user/preferences'),
-        fetch('/api/gmail'),
-        fetch('/api/google/docs'),
-        fetch('/api/calendar/events'),
-        fetch('/api/health'),
-        fetch('/api/app-usage'),
+        fetch('/api/user/preferences', { cache: 'no-store' }),
+        fetch('/api/gmail', { cache: 'no-store' }),
+        fetch('/api/google/docs', { cache: 'no-store' }),
+        fetch('/api/calendar/events', { cache: 'no-store' }),
+        fetch('/api/health', { cache: 'no-store' }),
+        fetch('/api/app-usage', { cache: 'no-store' }),
       ])
 
       const prefsData = await prefsRes.json().catch(() => ({}))
