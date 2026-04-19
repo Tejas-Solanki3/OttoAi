@@ -26,6 +26,13 @@ async function getTokenInfo(accessToken) {
   }
 }
 
+function maskClientId(value) {
+  const raw = String(value || "")
+  if (!raw) return "unknown"
+  if (raw.length <= 12) return raw
+  return `${raw.slice(0, 6)}...${raw.slice(-6)}`
+}
+
 async function refreshAccessToken(account, db) {
   try {
     const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -114,7 +121,7 @@ export async function GET(req) {
         {
           connected: false,
           needsReauth: true,
-          error: "Google token was issued for a different OAuth client. Reconnect using the same Google Cloud project client configured in this app.",
+          error: `Google token was issued for a different OAuth client. Token aud=${maskClientId(tokenAudience)} app client=${maskClientId(expectedClientId)}. Reconnect using the same Google Cloud project client configured in this app.`,
         },
         { status: 200 }
       )
@@ -181,8 +188,8 @@ export async function GET(req) {
               connected: false,
               needsReauth: false,
               error: projectHint
-                ? `Google Fitness API appears disabled for project ${projectHint}. Enable Google Fitness API in the exact project that owns your OAuth client ID.`
-                : "Google Fitness API appears disabled for this Google Cloud project. Enable Google Fitness API in the exact project that owns your OAuth client ID.",
+                ? `Google Fitness API appears disabled for project ${projectHint}. Token aud=${maskClientId(tokenAudience)} app client=${maskClientId(expectedClientId || tokenAudience)}. Enable Google Fitness API in the exact project that owns your OAuth client ID.`
+                : `Google Fitness API appears disabled for this Google Cloud project. Token aud=${maskClientId(tokenAudience)} app client=${maskClientId(expectedClientId || tokenAudience)}. Enable Google Fitness API in the exact project that owns your OAuth client ID.`,
             },
             { status: 200 }
           )
