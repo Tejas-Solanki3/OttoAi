@@ -4,6 +4,30 @@ import { Calendar, Clock, Video, Plus, X, Loader2, ExternalLink, Trash2, Inbox }
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
+function parseDurationToMinutes(durationValue) {
+  if (!durationValue) return null
+  const normalized = String(durationValue).trim().toLowerCase()
+  if (normalized.endsWith('m')) {
+    const mins = Number.parseInt(normalized.replace('m', ''), 10)
+    return Number.isFinite(mins) && mins > 0 ? mins : null
+  }
+  if (normalized.endsWith('h')) {
+    const hours = Number.parseInt(normalized.replace('h', ''), 10)
+    return Number.isFinite(hours) && hours > 0 ? hours * 60 : null
+  }
+  return null
+}
+
+function addMinutesToTime(timeString, minutesToAdd) {
+  const [hours, minutes] = timeString.split(':').map(Number)
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return timeString
+  const base = hours * 60 + minutes
+  const next = (base + minutesToAdd) % (24 * 60)
+  const nextHours = String(Math.floor(next / 60)).padStart(2, '0')
+  const nextMinutes = String(next % 60).padStart(2, '0')
+  return `${nextHours}:${nextMinutes}`
+}
+
 function BookingsContent() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('upcoming')
@@ -23,6 +47,7 @@ function BookingsContent() {
   const [attendees, setAttendees] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   const [createdEvent, setCreatedEvent] = useState(null)
+  const [quickBookDurationMinutes, setQuickBookDurationMinutes] = useState(null)
 
   useEffect(() => {
     const today = new Date()
@@ -36,8 +61,18 @@ function BookingsContent() {
       setShowCreate(true)
       if (searchParams.get('title')) setTitle(searchParams.get('title'))
       if (searchParams.get('meet') === '1') setAddMeet(true)
+      const durationMinutes = parseDurationToMinutes(searchParams.get('duration'))
+      if (durationMinutes) {
+        setQuickBookDurationMinutes(durationMinutes)
+        setEndTime(addMinutesToTime('10:00', durationMinutes))
+      }
     }
   }, [searchParams])
+
+  useEffect(() => {
+    if (!showCreate || !quickBookDurationMinutes) return
+    setEndTime(addMinutesToTime(startTime, quickBookDurationMinutes))
+  }, [startTime, quickBookDurationMinutes, showCreate])
 
   const loadEvents = async () => {
     try {
