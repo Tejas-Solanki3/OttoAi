@@ -1,5 +1,4 @@
 import { Activity } from "lucide-react"
-import { Skeleton } from "boneyard-js/react"
 
 export function HealthCard({ stats, loading, error, connected, needsReauth, onReconnect }) {
   const showSkeleton = loading && connected === null && !error && !stats
@@ -11,22 +10,14 @@ export function HealthCard({ stats, loading, error, connected, needsReauth, onRe
 
   if (showSkeleton) {
     return (
-      <Skeleton
-        name="health-card"
-        loading
-        fallback={
-          <div className="h-full min-h-[230px] rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="h-5 w-28 rounded bg-gray-200 mb-4" />
-            <div className="h-16 rounded bg-gray-100 mb-4" />
-            <div className="grid grid-cols-2 gap-4">
-              <div className="h-12 rounded bg-gray-100" />
-              <div className="h-12 rounded bg-gray-100" />
-            </div>
-          </div>
-        }
-      >
-        <div className="h-full min-h-[230px] rounded-xl border border-gray-200 bg-white p-6 shadow-sm" />
-      </Skeleton>
+      <div className="h-[230px] rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="h-5 w-28 rounded bg-gray-200 mb-4" />
+        <div className="h-16 rounded bg-gray-100 mb-4" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-12 rounded bg-gray-100" />
+          <div className="h-12 rounded bg-gray-100" />
+        </div>
+      </div>
     )
   }
 
