@@ -28,14 +28,15 @@ const fadeVariants = {
 }
 
 const integrationsData = [
-  { name: 'Notion', description: 'Sync notes and meeting context.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/notion-2.svg' },
-  { name: 'Google Sheets', description: 'Log activities and reports automatically.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-sheets-logo-icon.svg' },
-  { name: 'Slack', description: 'Send updates when tasks are completed.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg' },
-  { name: 'Zapier', description: 'Connect with thousands of automation actions.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/zapier.svg' },
-  { name: 'Google Analytics', description: 'Track workflow and usage patterns.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-analytics-3.svg' },
-  { name: 'Meta Pixel', description: 'Measure campaign conversions and events.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/meta-3.svg' },
-  { name: 'Airtable', description: 'Push captured data into your base.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/airtable.svg' },
-  { name: 'Webhooks', description: 'Forward events to your own endpoints.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/webhooks.svg' },
+  { name: 'Gmail', description: 'Live now: AI inbox summaries and smart replies.', iconSrc: 'https://img.icons8.com/color/48/gmail-new.png' },
+  { name: 'Google Calendar', description: 'Live now: booking sync and conflict handling.', iconSrc: 'https://img.icons8.com/color/48/google-calendar--v2.png' },
+  { name: 'Google Meet', description: 'Live now: automatic Meet link creation.', iconSrc: 'https://img.icons8.com/color/48/google-meet--v1.png' },
+  { name: 'Google Docs', description: 'Live now: document listing and AI summaries.', iconSrc: 'https://img.icons8.com/color/48/google-docs--v1.png' },
+  { name: 'Google Analytics', description: 'Planned: traffic, engagement, and conversion metrics.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-analytics-3.svg' },
+  { name: 'Zapier', description: 'Coming soon: no-code automation workflows.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/zapier.svg' },
+  { name: 'Slack', description: 'Coming soon: alerting and team notifications.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg' },
+  { name: 'Notion', description: 'Coming soon: notes and workspace sync.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/notion-2.svg' },
+  { name: 'And many more', description: 'Coming soon: more integrations are on the roadmap.', iconSrc: 'https://img.icons8.com/ios-glyphs/60/plus-math.png' },
 ]
 
 export default function Home() {
@@ -144,8 +145,8 @@ export default function Home() {
 
       <section id="features" className="bg-white">
         <IntegrationShowcase
-          title="Connect your ~favorite~ tools"
-          subtitle="Save time by syncing updates, docs, and workflows with the tools your team already uses."
+          title="Connect your ~Google~ stack"
+          subtitle="Use what works today, with more integrations coming soon."
           illustrationSrc="https://tally.so/images/demo/v2/strategy.png"
           illustrationAlt="Checklist strategy illustration"
           integrations={integrationsData}

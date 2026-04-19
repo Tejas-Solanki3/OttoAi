@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Link2, Calendar as CalendarIcon, Clock, Settings as SettingsIcon, Search, Mail, LogOut, User, ChevronUp, FileText } from "lucide-react"
+import { Link2, Calendar as CalendarIcon, Clock, Settings as SettingsIcon, Search, Mail, LogOut, ChevronUp, FileText } from "lucide-react"
 import { useState } from "react"
 
 const nav = [
@@ -17,7 +17,6 @@ const nav = [
 
 export default function AppShell({ children }) {
   const pathname = usePathname()
-  const router = useRouter()
   const { data: session } = useSession()
   const isPublicPage = pathname === "/" || pathname === "/login" || pathname === "/signup"
   const [profileOpen, setProfileOpen] = useState(false)
@@ -71,13 +70,6 @@ export default function AppShell({ children }) {
                 <p className="text-xs text-gray-500 mt-0.5 truncate">{session?.user?.email || ""}</p>
               </div>
               <div className="p-1">
-                <button
-                  onClick={() => { setProfileOpen(false); router.push("/profile") }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Edit Profile
-                </button>
                 <button
                   onClick={handleSignOut}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
@@ -135,13 +127,6 @@ export default function AppShell({ children }) {
                 <p className="text-xs text-gray-500 mt-0.5 truncate">{session?.user?.email || ""}</p>
               </div>
               <div className="p-1">
-                <button
-                  onClick={() => { setProfileOpen(false); router.push("/profile") }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Edit Profile
-                </button>
                 <button
                   onClick={handleSignOut}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
