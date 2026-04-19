@@ -2,7 +2,9 @@ import { Activity } from "lucide-react"
 import { Skeleton } from "boneyard-js/react"
 
 export function HealthCard({ stats, loading, error, connected, needsReauth, onReconnect }) {
-  if (loading) {
+  const showSkeleton = loading && connected === null && !error && !stats
+
+  if (showSkeleton) {
     return (
       <Skeleton
         name="health-card"

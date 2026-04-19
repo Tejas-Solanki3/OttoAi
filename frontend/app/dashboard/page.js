@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [healthData, setHealthData] = useState(null)
   const [healthLoading, setHealthLoading] = useState(false)
   const [healthError, setHealthError] = useState(null)
-  const [healthConnected, setHealthConnected] = useState(false)
+  const [healthConnected, setHealthConnected] = useState(null)
   const [healthNeedsReauth, setHealthNeedsReauth] = useState(false)
   const [appUsage, setAppUsage] = useState(null)
   const [appUsageLoading, setAppUsageLoading] = useState(false)
@@ -240,7 +240,13 @@ export default function DashboardPage() {
           needsReauth={healthNeedsReauth}
           onReconnect={handleReconnectGoogleFit}
         />
-        <MiniChart title="Automation Index" suffix={hasUsageData ? 'm' : ''} data={chartData} className="max-w-none" />
+        <MiniChart
+          title="Automation Index"
+          suffix={hasUsageData ? 'm' : ''}
+          data={chartData}
+          loading={isLoading || (appUsageLoading && !hasUsageData)}
+          className="md:col-span-2"
+        />
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">

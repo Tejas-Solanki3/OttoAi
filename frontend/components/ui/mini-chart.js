@@ -17,6 +17,7 @@ export function MiniChart({
   title = "Activity",
   suffix = "%",
   data = defaultData,
+  loading = false,
   className,
 }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
@@ -24,6 +25,29 @@ export function MiniChart({
 
   const maxValue = useMemo(() => Math.max(...data.map((d) => d.value), 1), [data])
   const displayValue = hoveredIndex !== null ? data[hoveredIndex]?.value : null
+
+  if (loading) {
+    return (
+      <div className="group relative w-full min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            <span className="h-3 w-28 rounded bg-gray-200" />
+          </div>
+          <div className="h-7 w-16 rounded bg-gray-200" />
+        </div>
+
+        <div className="flex h-36 items-end gap-2">
+          {defaultData.map((item, index) => (
+            <div key={`${item.label}-${index}`} className="relative flex h-full flex-1 flex-col items-center justify-end">
+              <div className="w-full rounded-full bg-gray-100" style={{ height: `${32 + (index % 4) * 12}px` }} />
+              <div className="mt-2 h-2 w-12 rounded bg-gray-100" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -33,7 +57,7 @@ export function MiniChart({
         setHoveredIndex(null)
       }}
       className={cn(
-        "group relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-500 hover:border-gray-300",
+        "group relative w-full min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-500 hover:border-gray-300",
         className,
       )}
     >
