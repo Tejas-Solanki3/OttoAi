@@ -3,6 +3,48 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "../auth/[...nextauth]/route"
 import clientPromise from "../../../lib/mongodb"
 
+async function refreshAccessToken(account, db) {
+  try {
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        refresh_token: account.refresh_token,
+        grant_type: "refresh_token",
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const newToken = data.access_token
+      const newExpiry = Math.floor(Date.now() / 1000) + (data.expires_in || 3600)
+
+      await db.collection("accounts").updateOne(
+        { _id: account._id },
+        { $set: { access_token: newToken, expires_at: newExpiry } }
+      )
+
+      return newToken
+    }
+  } catch (error) {
+    console.error("Google Fit token refresh failed:", error)
+  }
+
+  return null
+}
+
+async function getValidToken(account, db) {
+  const now = Math.floor(Date.now() / 1000)
+  if (account.expires_at && now >= account.expires_at - 300 && account.refresh_token) {
+    const freshToken = await refreshAccessToken(account, db)
+    if (freshToken) return freshToken
+  }
+
+  return account.access_token || null
+}
+
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions)
@@ -33,7 +75,13 @@ export async function GET(req) {
       })
     }
 
-    const accessToken = account.access_token
+    const accessToken = await getValidToken(account, db)
+    if (!accessToken) {
+      return Response.json({
+        connected: false,
+        error: "Google Fit not connected",
+      })
+    }
 
     // Fetch steps data from Google Fit API
     // Google Fit API: https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate

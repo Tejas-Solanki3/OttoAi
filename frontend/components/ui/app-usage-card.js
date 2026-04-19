@@ -1,15 +1,28 @@
 import { Zap } from "lucide-react"
+import { Skeleton } from "boneyard-js/react"
 
 export function AppUsageCard({ stats, loading, error }) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-32 mb-4" />
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-100 rounded" />
-          <div className="h-4 bg-gray-100 rounded w-5/6" />
-        </div>
-      </div>
+      <Skeleton
+        name="app-usage-card"
+        loading
+        fallback={
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="h-5 w-32 rounded bg-gray-200 mb-5" />
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((item) => (
+                <div key={item} className="space-y-2">
+                  <div className="h-3 w-24 rounded bg-gray-200" />
+                  <div className="h-2 rounded-full bg-gray-100" />
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm" />
+      </Skeleton>
     )
   }
 

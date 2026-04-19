@@ -43,11 +43,13 @@ export async function GET(req) {
 
     const userFilter = userId
       ? {
-          filter: {
-            fieldName: "userId",
-            stringFilter: {
-              matchType: "EXACT",
-              value: userId,
+          dimensionFilter: {
+            filter: {
+              fieldName: "userId",
+              stringFilter: {
+                matchType: "EXACT",
+                value: userId,
+              },
             },
           },
         }

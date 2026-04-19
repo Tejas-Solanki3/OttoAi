@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip } from 'recharts'
+import { Skeleton } from 'boneyard-js/react'
 
 const defaultBrowserColors = { Chrome: '#2563eb', Safari: '#0f766e', Firefox: '#f97316', Edge: '#7c3aed' }
 const defaultOsColors = { macOS: '#111827', Windows: '#2563eb', iOS: '#16a34a', Android: '#f59e0b' }
@@ -43,10 +44,32 @@ export function AnalyticsOverview() {
 
   if (loading) {
     return (
-      <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-64 bg-gray-100 rounded" />
-      </section>
+      <Skeleton
+        name="analytics-overview"
+        loading
+        fallback={
+          <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex items-end justify-between gap-4">
+              <div className="space-y-2">
+                <div className="h-5 w-52 rounded bg-gray-200" />
+                <div className="h-4 w-72 rounded bg-gray-100" />
+              </div>
+              <div className="h-3 w-24 rounded bg-gray-100" />
+            </div>
+            <div className="grid gap-4 xl:grid-cols-[1.5fr,1fr]">
+              <div className="h-64 rounded-xl bg-gray-100" />
+              <div className="h-64 rounded-xl bg-gray-100" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="h-60 rounded-xl bg-gray-100" />
+              ))}
+            </div>
+          </section>
+        }
+      >
+        <section className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm" />
+      </Skeleton>
     )
   }
 

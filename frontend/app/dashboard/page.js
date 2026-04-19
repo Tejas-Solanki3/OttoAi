@@ -31,8 +31,50 @@ export default function DashboardPage() {
   const [appUsageLoading, setAppUsageLoading] = useState(false)
   const [appUsageError, setAppUsageError] = useState(null)
 
+  const loadLivePanels = async () => {
+    setHealthLoading(true)
+    setAppUsageLoading(true)
+
+    try {
+      const [healthRes, appUsageRes] = await Promise.all([
+        fetch('/api/health'),
+        fetch('/api/app-usage'),
+      ])
+
+      const healthData = await healthRes.json().catch(() => ({}))
+      const appUsageData = await appUsageRes.json().catch(() => ({}))
+
+      if (healthData?.stats && healthData?.connected) {
+        setHealthData(healthData.stats)
+        setHealthConnected(true)
+        setHealthError(null)
+      } else if (healthData?.connected === false) {
+        setHealthConnected(false)
+        setHealthData(null)
+      } else if (healthData?.error) {
+        setHealthError(healthData.error)
+        setHealthData(null)
+        setHealthConnected(false)
+      }
+
+      if (appUsageData?.stats) {
+        setAppUsage(appUsageData.stats)
+        setAppUsageError(null)
+      } else if (appUsageData?.error) {
+        setAppUsageError(appUsageData.error)
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setHealthLoading(false)
+      setAppUsageLoading(false)
+    }
+  }
+
   const loadDashboard = async () => {
     setIsLoading(true)
+    setHealthLoading(true)
+    setAppUsageLoading(true)
 
     try {
       const [prefsRes, gmailRes, docsRes, bookingsRes, healthRes, appUsageRes] = await Promise.all([
@@ -86,11 +128,19 @@ export default function DashboardPage() {
       console.error(error)
     } finally {
       setIsLoading(false)
+      setHealthLoading(false)
+      setAppUsageLoading(false)
     }
   }
 
   useEffect(() => {
     loadDashboard()
+
+    const liveRefresh = window.setInterval(() => {
+      loadLivePanels()
+    }, 30000)
+
+    return () => window.clearInterval(liveRefresh)
   }, [])
 
   const chartData = useMemo(() => {

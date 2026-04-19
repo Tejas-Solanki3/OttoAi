@@ -21,29 +21,52 @@ export function useAppUsageTracker() {
   const startTimeRef = useRef(Date.now())
   const lastPathRef = useRef(pathname)
 
-  useEffect(() => {
-    // Only log if path actually changed
-    if (lastPathRef.current === pathname) return
-
-    // Log usage for the previous app/page
-    const previousPath = lastPathRef.current
-    const appName = Object.entries(APP_NAMES).find(([path]) =>
-      previousPath.startsWith(path)
+  const flushUsage = (path, startedAt) => {
+    const appName = Object.entries(APP_NAMES).find(([route]) =>
+      path?.startsWith(route)
     )?.[1]
 
-    if (appName) {
-      const duration = Math.round((Date.now() - startTimeRef.current) / 1000) // in seconds
-      
-      // Log to backend
-      fetch('/api/app-usage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appName, duration }),
-      }).catch((err) => console.error('Failed to log app usage:', err))
-    }
+    if (!appName) return
 
-    // Update refs for new page
+    const duration = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
+
+    fetch('/api/app-usage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ appName, duration }),
+      keepalive: true,
+    }).catch((err) => console.error('Failed to log app usage:', err))
+  }
+
+  useEffect(() => {
+    if (lastPathRef.current === pathname) return
+
+    flushUsage(lastPathRef.current, startTimeRef.current)
     lastPathRef.current = pathname
     startTimeRef.current = Date.now()
   }, [pathname])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      flushUsage(lastPathRef.current, startTimeRef.current)
+      startTimeRef.current = Date.now()
+    }, 30000)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushUsage(lastPathRef.current, startTimeRef.current)
+        startTimeRef.current = Date.now()
+      }
+    }
+
+    window.addEventListener('pagehide', handleVisibilityChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      flushUsage(lastPathRef.current, startTimeRef.current)
+      window.clearInterval(intervalId)
+      window.removeEventListener('pagehide', handleVisibilityChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
 }

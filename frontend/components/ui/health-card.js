@@ -1,12 +1,25 @@
 import { Activity } from "lucide-react"
+import { Skeleton } from "boneyard-js/react"
 
 export function HealthCard({ stats, loading, error, connected }) {
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-24 mb-4" />
-        <div className="h-12 bg-gray-100 rounded" />
-      </div>
+      <Skeleton
+        name="health-card"
+        loading
+        fallback={
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="h-5 w-28 rounded bg-gray-200 mb-4" />
+            <div className="h-16 rounded bg-gray-100 mb-4" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-12 rounded bg-gray-100" />
+              <div className="h-12 rounded bg-gray-100" />
+            </div>
+          </div>
+        }
+      >
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm" />
+      </Skeleton>
     )
   }
 
