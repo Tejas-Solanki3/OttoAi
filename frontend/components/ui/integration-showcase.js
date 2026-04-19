@@ -93,6 +93,8 @@ export function IntegrationShowcase({
             </motion.div>
           ))}
         </motion.div>
+
+        <p className="mt-8 text-sm text-gray-400">And many more integrations coming soon to expand your automation platform.</p>
       </div>
     </section>
   )

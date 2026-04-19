@@ -31,10 +31,10 @@ const integrationsData = [
   { name: 'Google Calendar', description: 'Live now: booking sync and conflict handling.', iconSrc: 'https://img.icons8.com/color/48/google-calendar--v2.png' },
   { name: 'Google Meet', description: 'Live now: automatic Meet link creation.', iconSrc: 'https://img.icons8.com/color/48/google-meet--v1.png' },
   { name: 'Google Docs', description: 'Live now: document listing and AI summaries.', iconSrc: 'https://img.icons8.com/color/48/google-docs--v1.png' },
+  { name: 'Google Health', description: 'Live now: daily step tracking and health metrics.', iconSrc: 'https://img.icons8.com/color/48/heart-health.png' },
   { name: 'Google Analytics', description: 'Planned: traffic, engagement, and conversion metrics.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-analytics-3.svg' },
   { name: 'Slack', description: 'Coming soon: alerting and team notifications.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg' },
   { name: 'Notion', description: 'Coming soon: notes and workspace sync.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/notion-2.svg' },
-  { name: 'And many more', description: 'Coming soon: more integrations are on the roadmap.', iconSrc: 'https://img.icons8.com/ios-glyphs/60/plus-math.png' },
 ]
 
 const marqueePhrases = [

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, FileText, Inbox, Link2, Activity, RefreshCw, Sparkles, BarChart3 } from 'lucide-react'
+import { CalendarDays, FileText, Inbox, Link2, Activity, RefreshCw, Sparkles } from 'lucide-react'
 import { MiniChart } from '../../components/ui/mini-chart'
 import { AnalyticsOverview } from '../../components/ui/analytics-overview'
 
@@ -161,20 +161,6 @@ export default function DashboardPage() {
       </div>
 
       <AnalyticsOverview />
-
-      <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-white shadow-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
-              <BarChart3 className="h-3.5 w-3.5" /> Google Analytics roadmap
-            </div>
-            <h3 className="text-xl font-semibold">Live GA4 data can drive these charts once connected.</h3>
-            <p className="mt-2 max-w-2xl text-sm text-white/70">
-              Feature usage, daily active users, browser distribution, OS split, and desktop vs mobile usage are the right GA4 signals for this dashboard.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
