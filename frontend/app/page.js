@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-import { ArrowRight, CheckCircle2, Video, Calendar } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import { Marquee } from '../components/ui/marquee'
+import { IntegrationShowcase } from '../components/ui/integration-showcase'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -25,6 +26,17 @@ const fadeVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } }
 }
+
+const integrationsData = [
+  { name: 'Notion', description: 'Sync notes and meeting context.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/notion-2.svg' },
+  { name: 'Google Sheets', description: 'Log activities and reports automatically.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-sheets-logo-icon.svg' },
+  { name: 'Slack', description: 'Send updates when tasks are completed.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg' },
+  { name: 'Zapier', description: 'Connect with thousands of automation actions.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/zapier.svg' },
+  { name: 'Google Analytics', description: 'Track workflow and usage patterns.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/google-analytics-3.svg' },
+  { name: 'Meta Pixel', description: 'Measure campaign conversions and events.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/meta-3.svg' },
+  { name: 'Airtable', description: 'Push captured data into your base.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/airtable.svg' },
+  { name: 'Webhooks', description: 'Forward events to your own endpoints.', iconSrc: 'https://cdn.worldvectorlogo.com/logos/webhooks.svg' },
+]
 
 export default function Home() {
   const router = useRouter()
@@ -130,50 +142,14 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            className="mb-16"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-          >
-            <motion.h2 variants={itemVariants} className="text-3xl font-bold tracking-tight text-black mb-4">Everything you need to master your schedule</motion.h2>
-            <motion.p variants={itemVariants} className="text-lg text-gray-600 max-w-2xl">A complete toolset designed to make your booking experience seamless and professional.</motion.p>
-          </motion.div>
-          
-          <motion.div 
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-          >
-            <motion.div variants={itemVariants} whileHover={{ y: -5 }}>
-              <FeatureCard 
-                icon={<CheckCircle2 className="w-6 h-6" />}
-                title="Automated Workflows"
-                description="Send reminders, thank you notes, and follow-ups automatically. Never miss a beat."
-              />
-            </motion.div>
-            <motion.div variants={itemVariants} whileHover={{ y: -5 }}>
-              <FeatureCard 
-                icon={<Video className="w-6 h-6" />}
-                title="Dynamic Video Links"
-                description="Automatically generate unique Google Meet or Zoom links for every new booked event."
-              />
-            </motion.div>
-            <motion.div variants={itemVariants} whileHover={{ y: -5 }}>
-              <FeatureCard 
-                icon={<Calendar className="w-6 h-6" />}
-                title="Calendar Sync"
-                description="Check for conflicts across all your calendars and only show your true availability."
-              />
-            </motion.div>
-          </motion.div>
-        </div>
+      <section id="features" className="bg-white">
+        <IntegrationShowcase
+          title="Connect your ~favorite~ tools"
+          subtitle="Save time by syncing updates, docs, and workflows with the tools your team already uses."
+          illustrationSrc="https://tally.so/images/demo/v2/strategy.png"
+          illustrationAlt="Checklist strategy illustration"
+          integrations={integrationsData}
+        />
       </section>
 
       {/* Footer */}
@@ -197,18 +173,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-function FeatureCard({ icon, title, description }) {
-  return (
-    <div className="p-8 rounded-2xl border border-gray-100 bg-gray-50/50 hover:border-gray-200 transition-colors h-full">
-      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-black shadow-sm mb-6 border border-gray-100">
-        {icon}
-      </div>
-      <h3 className="text-xl font-semibold text-black mb-3">{title}</h3>
-      <p className="text-gray-600 leading-relaxed">{description}</p>
     </div>
   )
 }

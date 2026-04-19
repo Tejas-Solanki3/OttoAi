@@ -1,229 +1,169 @@
 'use client'
 
-import { Clock, Plus, X, Save, Trash2, Settings2, Eye, EyeOff, Video, Loader2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { CalendarDays, FileText, Inbox, Link2, Activity, RefreshCw } from 'lucide-react'
+import { MiniChart } from '../../components/ui/mini-chart'
 
-const DURATION_OPTIONS = ['15m', '30m', '45m', '60m', '90m', '120m']
+const integrationIds = ['google-calendar', 'google-meet', 'gmail', 'google-docs']
 
-export default function Dashboard() {
-  const [eventTypes, setEventTypes] = useState([])
+function isEnabled(installedApps, id) {
+  if (!Array.isArray(installedApps)) return true
+  return installedApps.includes(id)
+}
+
+export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
-  const [editIdx, setEditIdx] = useState(null)
+  const [stats, setStats] = useState({
+    emails: 0,
+    docs: 0,
+    upcomingEvents: 0,
+    integrationsOn: 0,
+  })
+  const [installedApps, setInstalledApps] = useState(null)
 
-  // Form state
-  const [title, setTitle] = useState('')
-  const [duration, setDuration] = useState('30m')
-  const [description, setDescription] = useState('')
-  const [addMeet, setAddMeet] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const loadDashboard = async () => {
+    setIsLoading(true)
 
-  const loadData = async () => {
     try {
-      const res = await fetch('/api/event-types')
-      const data = await res.json()
-      if (data.eventTypes) setEventTypes(data.eventTypes)
-    } catch (e) { console.error(e) }
-    finally { setIsLoading(false) }
-  }
+      const [prefsRes, gmailRes, docsRes, bookingsRes] = await Promise.all([
+        fetch('/api/user/preferences'),
+        fetch('/api/gmail'),
+        fetch('/api/google/docs'),
+        fetch('/api/calendar/events'),
+      ])
 
-  useEffect(() => { loadData() }, [])
+      const prefsData = await prefsRes.json().catch(() => ({}))
+      const gmailData = await gmailRes.json().catch(() => ({}))
+      const docsData = await docsRes.json().catch(() => ({}))
+      const bookingsData = await bookingsRes.json().catch(() => ({}))
 
-  const resetForm = () => {
-    setTitle(''); setDuration('30m'); setDescription(''); setAddMeet(true)
-    setShowCreate(false); setEditIdx(null)
-  }
+      const apps = Array.isArray(prefsData?.user?.installed_apps)
+        ? prefsData.user.installed_apps
+        : integrationIds
 
-  const handleSave = async () => {
-    if (!title.trim()) return
-    setIsSaving(true)
-    try {
-      const eventType = { title, duration, description, addMeet }
-      const action = editIdx !== null ? 'update' : 'add'
-      const res = await fetch('/api/event-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, eventType, index: editIdx })
+      setInstalledApps(apps)
+      setStats({
+        emails: Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0,
+        docs: Array.isArray(docsData?.docs) ? docsData.docs.length : 0,
+        upcomingEvents: Array.isArray(bookingsData?.events) ? bookingsData.events.length : 0,
+        integrationsOn: apps.length,
       })
-      const data = await res.json()
-      if (data.eventTypes) setEventTypes(data.eventTypes)
-      resetForm()
-    } catch (e) { console.error(e) }
-    finally { setIsSaving(false) }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleDelete = async (idx) => {
-    try {
-      const res = await fetch('/api/event-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'delete', index: idx })
-      })
-      const data = await res.json()
-      if (data.eventTypes) setEventTypes(data.eventTypes)
-    } catch (e) { console.error(e) }
-  }
+  useEffect(() => {
+    loadDashboard()
+  }, [])
 
-  const handleToggle = async (idx) => {
-    try {
-      const res = await fetch('/api/event-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle', index: idx })
-      })
-      const data = await res.json()
-      if (data.eventTypes) setEventTypes(data.eventTypes)
-    } catch (e) { console.error(e) }
-  }
-
-  const startEdit = (idx) => {
-    const et = eventTypes[idx]
-    setTitle(et.title); setDuration(et.duration); setDescription(et.description || ''); setAddMeet(et.addMeet ?? true)
-    setEditIdx(idx); setShowCreate(true)
-  }
-
-  const handleQuickBook = (et) => {
-    // Navigate to bookings page with pre-filled data
-    const params = new URLSearchParams({ title: et.title, duration: et.duration, meet: et.addMeet ? '1' : '0' })
-    window.location.href = `/bookings?create=1&${params.toString()}`
-  }
+  const chartData = useMemo(() => {
+    return [
+      { label: 'Mail', value: Math.min(100, Math.max(8, stats.emails * 6)) },
+      { label: 'Docs', value: Math.min(100, Math.max(8, stats.docs * 6)) },
+      { label: 'Meet', value: isEnabled(installedApps, 'google-meet') ? 78 : 12 },
+      { label: 'Cal', value: Math.min(100, Math.max(8, stats.upcomingEvents * 7)) },
+      { label: 'Apps', value: Math.min(100, Math.max(8, stats.integrationsOn * 20)) },
+      { label: 'Flow', value: Math.min(100, Math.max(8, (stats.emails + stats.docs + stats.upcomingEvents) * 3)) },
+      { label: 'Auto', value: isEnabled(installedApps, 'gmail') && isEnabled(installedApps, 'google-calendar') ? 88 : 28 },
+    ]
+  }, [installedApps, stats])
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
-        <div className="h-64 bg-gray-100 rounded-lg"></div>
+      <div className="max-w-6xl animate-pulse">
+        <div className="mb-6 h-8 w-60 rounded bg-gray-200" />
+        <div className="grid gap-4 md:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 rounded-xl bg-gray-100" />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl space-y-8">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Event Types</h1>
-          <p className="text-sm text-gray-500">Create reusable meeting templates to quickly book events.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500">A quick pulse of your productivity stack and Google workflow.</p>
         </div>
-        <button 
-          onClick={() => { showCreate ? resetForm() : setShowCreate(true) }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm ${
-            showCreate ? 'bg-gray-100 text-gray-700' : 'bg-black text-white hover:bg-gray-800'
-          }`}
+        <button
+          onClick={loadDashboard}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
-          {showCreate ? <><X className="w-4 h-4" /> Cancel</> : <><Plus className="w-4 h-4" /> New Type</>}
+          <RefreshCw className="h-4 w-4" /> Refresh
         </button>
       </div>
 
-      {/* Create / Edit Form */}
-      {showCreate && (
-        <div className="mb-8 bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-5">
-          <h3 className="font-semibold text-gray-900 text-lg">
-            {editIdx !== null ? 'Edit Event Type' : 'Create Event Type'}
-          </h3>
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard title="Inbox Messages" value={stats.emails} icon={<Inbox className="h-4 w-4" />} />
+        <StatCard title="Google Docs" value={stats.docs} icon={<FileText className="h-4 w-4" />} />
+        <StatCard title="Upcoming Events" value={stats.upcomingEvents} icon={<CalendarDays className="h-4 w-4" />} />
+        <StatCard title="Active Integrations" value={stats.integrationsOn} icon={<Link2 className="h-4 w-4" />} />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Title *</label>
-            <input
-              type="text" value={title} onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Quick Chat, Project Review, Interview"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
+      <div className="grid gap-6 lg:grid-cols-[340px,1fr]">
+        <MiniChart title="Automation Index" suffix="%" data={chartData} />
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <Activity className="h-4 w-4 text-gray-700" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Integration Health</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <IntegrationRow
+              name="Google Calendar"
+              enabled={isEnabled(installedApps, 'google-calendar')}
+              description="Scheduling and conflict checks"
+            />
+            <IntegrationRow
+              name="Google Meet"
+              enabled={isEnabled(installedApps, 'google-meet')}
+              description="Meeting links for bookings"
+            />
+            <IntegrationRow
+              name="Gmail"
+              enabled={isEnabled(installedApps, 'gmail')}
+              description="Inbox summaries and smart replies"
+            />
+            <IntegrationRow
+              name="Google Docs"
+              enabled={isEnabled(installedApps, 'google-docs')}
+              description="AI-powered doc summaries"
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
-            <input
-              type="text" value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Optional — what is this meeting for?"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Duration</label>
-            <div className="flex gap-2 flex-wrap">
-              {DURATION_OPTIONS.map(d => (
-                <button key={d} onClick={() => setDuration(d)}
-                  className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                    duration === d ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <Video className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Include Google Meet</p>
-                <p className="text-xs text-gray-500">Auto-generate a Meet link when booking</p>
-              </div>
-            </div>
-            <button type="button" onClick={() => setAddMeet(!addMeet)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${addMeet ? 'bg-black' : 'bg-gray-300'}`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${addMeet ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-          </div>
-
-          <button onClick={handleSave} disabled={isSaving || !title.trim()}
-            className="w-full bg-black text-white py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
-          >
-            {isSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> {editIdx !== null ? 'Update' : 'Create'} Event Type</>}
-          </button>
         </div>
-      )}
+      </div>
+    </div>
+  )
+}
 
-      {/* Event Types List */}
-      {eventTypes.length === 0 && !showCreate ? (
-        <div className="text-center p-12 border border-gray-200 rounded-lg bg-gray-50">
-          <Clock className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-          <h3 className="font-medium text-gray-900">No Event Types Yet</h3>
-          <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">Create meeting templates like &quot;15 Min Chat&quot; or &quot;Project Review&quot; to quickly book events.</p>
-          <button onClick={() => setShowCreate(true)} className="mt-4 px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 mx-auto shadow-sm">
-            <Plus className="w-4 h-4" /> Create Your First Type
-          </button>
-        </div>
-      ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm divide-y divide-gray-100">
-          {eventTypes.map((event, idx) => (
-            <div key={idx} className={`flex flex-col sm:flex-row sm:items-center justify-between p-5 hover:bg-gray-50/50 transition-colors ${!event.active ? 'opacity-50' : ''}`}>
-              <div className="mb-3 sm:mb-0">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className={`w-2 h-2 rounded-full ${event.active ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                  <h3 className="font-semibold text-gray-900">{event.title}</h3>
-                  {!event.active && <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-md font-medium">Hidden</span>}
-                  {event.addMeet && <span className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-md font-medium border border-blue-100">Meet</span>}
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-500 ml-5">
-                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {event.duration}</span>
-                  {event.description && <><span className="text-gray-300">·</span><span>{event.description}</span></>}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 ml-5 sm:ml-0">
-                <button onClick={() => handleQuickBook(event)}
-                  className="px-3 py-1.5 bg-black text-white rounded-md text-xs font-medium hover:bg-gray-800 transition-colors shadow-sm"
-                >
-                  Quick Book
-                </button>
-                <button onClick={() => handleToggle(idx)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors" title={event.active ? 'Hide' : 'Show'}>
-                  {event.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-                <button onClick={() => startEdit(idx)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors" title="Edit">
-                  <Settings2 className="w-4 h-4" />
-                </button>
-                <button onClick={() => handleDelete(idx)} className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors" title="Delete">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+function StatCard({ title, value, icon }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="mb-2 flex items-center justify-between text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide">{title}</p>
+        {icon}
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    </div>
+  )
+}
+
+function IntegrationRow({ name, enabled, description }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+      <div className="mb-1 flex items-center justify-between">
+        <p className="text-sm font-semibold text-gray-900">{name}</p>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+          {enabled ? 'On' : 'Off'}
+        </span>
+      </div>
+      <p className="text-xs text-gray-500">{description}</p>
     </div>
   )
 }

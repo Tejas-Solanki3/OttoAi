@@ -1,31 +1,15 @@
 'use client'
 
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { Calendar, Mail, Video, FileText, Check, Plus, AlertCircle, RefreshCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export default function Settings() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
   const [installedApps, setInstalledApps] = useState([])
   const [isMounting, setIsMounting] = useState(true)
-
-  useEffect(() => {
-    async function loadApps() {
-      try {
-        const res = await fetch('/api/user/preferences')
-        const data = await res.json()
-        if (data.user && Array.isArray(data.user.installed_apps)) {
-           setInstalledApps(data.user.installed_apps)
-        }
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setIsMounting(false)
-      }
-    }
-    loadApps()
-  }, [])
+  const [pendingIntegration, setPendingIntegration] = useState(null)
 
   const integrations = [
     {
@@ -54,7 +38,28 @@ export default function Settings() {
     }
   ]
 
+  useEffect(() => {
+    async function loadApps() {
+      try {
+        const res = await fetch('/api/user/preferences')
+        const data = await res.json()
+        if (data.user && Array.isArray(data.user.installed_apps)) {
+           setInstalledApps(data.user.installed_apps)
+        } else {
+          setInstalledApps(integrations.map((item) => item.id))
+        }
+      } catch (e) {
+        console.error(e)
+        setInstalledApps(integrations.map((item) => item.id))
+      } finally {
+        setIsMounting(false)
+      }
+    }
+    loadApps()
+  }, [])
+
   const handleConnection = async (integrationId, currentlyConnected) => {
+    setPendingIntegration(integrationId)
     let updated = []
     if (currentlyConnected) {
       updated = installedApps.filter(app => app !== integrationId)
@@ -65,13 +70,17 @@ export default function Settings() {
     setInstalledApps(updated) // Optimistic UI Update
 
     try {
-      await fetch('/api/user/preferences', {
+      const res = await fetch('/api/user/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ installed_apps: updated })
       })
+      if (!res.ok) throw new Error('Failed to update integration settings')
     } catch(e) {
       console.error(e)
+      setInstalledApps(installedApps)
+    } finally {
+      setPendingIntegration(null)
     }
   }
 
@@ -79,12 +88,7 @@ export default function Settings() {
     <div className="max-w-4xl">
       <div className="mb-8 border-b border-gray-200 pb-4">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Integrations</h1>
-        <p className="text-sm text-gray-500">Connect your tools to automate your workflows.</p>
-        
-        <div className="flex gap-6 mt-6">
-          <button className="text-sm font-medium text-gray-900 border-b-2 border-black pb-3 px-1">App Store</button>
-          <button className="text-sm font-medium text-gray-500 hover:text-gray-900 pb-3 px-1 transition-colors">Developer API</button>
-        </div>
+        <p className="text-sm text-gray-500">Turn integrations on or off. Disabled integrations are blocked across the app immediately.</p>
       </div>
 
       {(status === 'loading' || isMounting) && (
@@ -111,14 +115,18 @@ export default function Settings() {
                 </div>
                 <button 
                   onClick={() => handleConnection(integration.id, isConnected)}
-                  disabled={status === 'loading' || isMounting}
+                  disabled={status === 'loading' || isMounting || pendingIntegration === integration.id}
                   className={`text-sm font-medium px-4 py-2 rounded-md border transition-all shadow-sm ${
                     isConnected 
                       ? 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-red-600 hover:border-red-200 group'
                       : 'border-black bg-black text-white hover:bg-gray-800 hover:scale-[1.02] active:scale-95'
                   }`}
                 >
-                  {isConnected ? (
+                  {pendingIntegration === integration.id ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" /> Updating...
+                    </span>
+                  ) : isConnected ? (
                     <span className="flex items-center gap-1">
                       <Check className="w-4 h-4 text-green-600 group-hover:hidden" />
                       <span className="group-hover:hidden text-green-700">Installed</span>

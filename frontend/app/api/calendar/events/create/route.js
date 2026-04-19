@@ -52,6 +52,12 @@ export async function POST(req) {
     const user = await db.collection("users").findOne({ email: session.user.email });
     if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
+    const installedApps = Array.isArray(user.installed_apps) ? user.installed_apps : null;
+    const calendarEnabled = !installedApps || installedApps.includes("google-calendar");
+    if (!calendarEnabled) {
+      return Response.json({ error: "Google Calendar integration is disabled in Settings." }, { status: 403 });
+    }
+
     const account = await db.collection("accounts").findOne({ userId: user._id, provider: "google" });
     if (!account || !account.access_token) {
       return Response.json({ error: "Google account not connected" }, { status: 400 });
@@ -64,6 +70,11 @@ export async function POST(req) {
 
     const body = await req.json();
     const { title, description, startDate, startTime, endTime, addMeet, attendees } = body;
+
+    const meetEnabled = !installedApps || installedApps.includes("google-meet");
+    if (addMeet && !meetEnabled) {
+      return Response.json({ error: "Google Meet integration is disabled in Settings." }, { status: 403 });
+    }
 
     if (!title || !startDate || !startTime || !endTime) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });

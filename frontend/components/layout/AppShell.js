@@ -7,7 +7,7 @@ import { Link2, Calendar as CalendarIcon, Clock, Settings as SettingsIcon, Searc
 import { useState } from "react"
 
 const nav = [
-  { href: "/dashboard", label: "Event Types", icon: <Link2 className="w-5 h-5" /> },
+  { href: "/dashboard", label: "Dashboard", icon: <Link2 className="w-5 h-5" /> },
   { href: "/gmail", label: "Gmail Summaries", icon: <Mail className="w-5 h-5" /> },
   { href: "/docs", label: "Google Docs", icon: <FileText className="w-5 h-5" /> },
   { href: "/spending", label: "Subscriptions", icon: <Search className="w-5 h-5" /> },

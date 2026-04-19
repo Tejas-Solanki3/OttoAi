@@ -13,6 +13,12 @@ export async function POST(req) {
     const user = await db.collection("users").findOne({ email: session.user.email });
     if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
+    const installedApps = Array.isArray(user.installed_apps) ? user.installed_apps : null;
+    const gmailEnabled = !installedApps || installedApps.includes("gmail");
+    if (!gmailEnabled) {
+      return Response.json({ error: "Gmail integration is disabled in Settings." }, { status: 403 });
+    }
+
     const account = await db.collection("accounts").findOne({ userId: user._id, provider: "google" });
     if (!account || !account.access_token) {
       return Response.json({ error: "Google account not connected" }, { status: 400 });

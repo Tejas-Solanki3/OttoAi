@@ -6,7 +6,7 @@ import { User, Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProfilePage() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -27,6 +27,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
       })
+      await update({ name })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (e) {

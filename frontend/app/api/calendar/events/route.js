@@ -59,6 +59,12 @@ export async function GET(req) {
     const user = await db.collection("users").findOne({ email: session.user.email });
     if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
+    const installedApps = Array.isArray(user.installed_apps) ? user.installed_apps : null;
+    const calendarEnabled = !installedApps || installedApps.includes("google-calendar");
+    if (!calendarEnabled) {
+      return Response.json({ error: "Google Calendar integration is disabled in Settings." }, { status: 403 });
+    }
+
     const account = await db.collection("accounts").findOne({ userId: user._id, provider: "google" });
 
     if (!account || !account.access_token) {
