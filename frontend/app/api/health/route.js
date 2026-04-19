@@ -75,6 +75,18 @@ export async function GET(req) {
       })
     }
 
+    const hasFitnessScope = String(account.scope || "").includes("fitness.activity.read")
+    if (!hasFitnessScope) {
+      return Response.json(
+        {
+          connected: false,
+          needsReauth: true,
+          error: "Missing Google Fit permission. Sign out and sign in again to grant fitness scope.",
+        },
+        { status: 403 }
+      )
+    }
+
     const accessToken = await getValidToken(account, db)
     if (!accessToken) {
       return Response.json({

@@ -75,10 +75,25 @@ export async function GET(req) {
         }
       : undefined
 
+    const runReportWithFallback = async (request) => {
+      try {
+        return await analyticsDataClient.runReport({
+          ...request,
+          ...(userFilter || {}),
+        })
+      } catch (error) {
+        const message = String(error?.message || "")
+        if (message.includes("INVALID_ARGUMENT") && userFilter) {
+          // Fallback to unfiltered report when userId dimension filtering is unsupported
+          return await analyticsDataClient.runReport(request)
+        }
+        throw error
+      }
+    }
+
     // Fetch feature usage (last 30 days)
-    const featureUsageResponse = await analyticsDataClient.runReport({
+    const featureUsageResponse = await runReportWithFallback({
       property: `properties/${propertyId}`,
-      ...userFilter,
       dateRanges: [
         {
           startDate: "30daysAgo",
@@ -99,9 +114,8 @@ export async function GET(req) {
     })
 
     // Fetch daily active users (last 7 days)
-    const dailyUsersResponse = await analyticsDataClient.runReport({
+    const dailyUsersResponse = await runReportWithFallback({
       property: `properties/${propertyId}`,
-      ...userFilter,
       dateRanges: [
         {
           startDate: "7daysAgo",
@@ -121,9 +135,8 @@ export async function GET(req) {
     })
 
     // Fetch browser data
-    const browserResponse = await analyticsDataClient.runReport({
+    const browserResponse = await runReportWithFallback({
       property: `properties/${propertyId}`,
-      ...userFilter,
       dateRanges: [
         {
           startDate: "30daysAgo",
@@ -144,9 +157,8 @@ export async function GET(req) {
     })
 
     // Fetch OS data
-    const osResponse = await analyticsDataClient.runReport({
+    const osResponse = await runReportWithFallback({
       property: `properties/${propertyId}`,
-      ...userFilter,
       dateRanges: [
         {
           startDate: "30daysAgo",
@@ -167,9 +179,8 @@ export async function GET(req) {
     })
 
     // Fetch device category data
-    const deviceResponse = await analyticsDataClient.runReport({
+    const deviceResponse = await runReportWithFallback({
       property: `properties/${propertyId}`,
-      ...userFilter,
       dateRanges: [
         {
           startDate: "30daysAgo",

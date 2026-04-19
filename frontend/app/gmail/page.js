@@ -2,6 +2,7 @@
 
 import { Mail, RefreshCw, Zap, Inbox, Clock, Loader2, ChevronDown, ChevronUp, Reply, Send, Sparkles, X, Check } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { Skeleton } from 'boneyard-js/react'
 
 function extractSenderName(from) {
   if (!from) return 'Unknown'
@@ -166,12 +167,22 @@ export default function GmailAssistant() {
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
-        <div className="space-y-3">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-gray-100 rounded-lg"></div>)}
-        </div>
-      </div>
+      <Skeleton
+        name="gmail-page"
+        loading
+        fallback={
+          <div className="max-w-5xl">
+            <div className="h-8 bg-gray-200 rounded w-56 mb-6"></div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded-lg"></div>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <div className="max-w-5xl" />
+      </Skeleton>
     )
   }
 
