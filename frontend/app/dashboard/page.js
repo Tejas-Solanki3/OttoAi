@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { CalendarDays, FileText, Inbox, Link2, Activity, RefreshCw, Sparkles } from 'lucide-react'
+import { CalendarDays, FileText, Inbox, Link2, Activity, RefreshCw, Sparkles, Zap, Flame } from 'lucide-react'
 import { MiniChart } from '../../components/ui/mini-chart'
 import { HealthCard } from '../../components/ui/health-card'
 
@@ -223,9 +223,9 @@ export default function DashboardPage() {
 
   const platformSummary = useMemo(() => {
     return [
-      { label: 'Product touchpoints', value: stats.emails + stats.docs + stats.upcomingEvents },
-      { label: 'Connected apps', value: connectedIntegrationsCount },
-      { label: 'Workflow score', value: Math.min(100, connectedIntegrationsCount * 12 + stats.upcomingEvents * 2) },
+      { label: 'Product touchpoints', value: stats.emails + stats.docs + stats.upcomingEvents, icon: 'sparkles' },
+      { label: 'Connected apps', value: connectedIntegrationsCount, icon: 'zap' },
+      { label: 'Workflow score', value: Math.min(100, connectedIntegrationsCount * 12 + stats.upcomingEvents * 2), icon: 'flame' },
     ]
   }, [stats, connectedIntegrationsCount])
 
@@ -252,19 +252,26 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {platformSummary.map((item) => (
-          <div key={item.label} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="mb-2 flex items-center gap-2 text-gray-500">
-              <Sparkles className="h-4 w-4" />
-              <p className="text-xs font-semibold uppercase tracking-wide">{item.label}</p>
+        {platformSummary.map((item) => {
+          const iconMap = {
+            sparkles: <Sparkles className="h-4 w-4" />,
+            zap: <Zap className="h-4 w-4" />,
+            flame: <Flame className="h-4 w-4" />,
+          }
+          return (
+            <div key={item.label} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-gray-500">
+                {iconMap[item.icon] || <Sparkles className="h-4 w-4" />}
+                <p className="text-xs font-semibold uppercase tracking-wide">{item.label}</p>
+              </div>
+              {isLoading ? (
+                <div className="h-8 w-16 rounded bg-gray-100" />
+              ) : (
+                <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+              )}
             </div>
-            {isLoading ? (
-              <div className="h-8 w-16 rounded bg-gray-100" />
-            ) : (
-              <p className="text-2xl font-bold text-gray-900">{item.value}</p>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]">
