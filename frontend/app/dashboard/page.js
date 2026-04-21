@@ -129,9 +129,11 @@ export default function DashboardPage() {
       })
 
       setStats({
-        emails: Number.isFinite(gmailData?.summary?.inbox_total)
-          ? gmailData.summary.inbox_total
-          : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0),
+        emails: Number.isFinite(gmailData?.summary?.mailbox_total)
+          ? gmailData.summary.mailbox_total
+          : (Number.isFinite(gmailData?.summary?.inbox_total)
+            ? gmailData.summary.inbox_total
+            : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0)),
         recentEmails: Number.isFinite(gmailData?.summary?.inbox_recent_count)
           ? gmailData.summary.inbox_recent_count
           : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0),

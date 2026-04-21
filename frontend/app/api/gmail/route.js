@@ -145,17 +145,17 @@ export async function GET(req) {
       if (fresh) accessToken = fresh;
     }
 
-    // Fetch exact INBOX total from Gmail labels API
-    let inboxTotal = 0;
-    const inboxLabelRes = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX",
+    // Fetch exact mailbox total from Gmail profile API
+    let mailboxTotal = 0;
+    const profileRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/profile",
       { headers: { "Authorization": `Bearer ${accessToken}` } }
     );
 
-    if (inboxLabelRes.ok) {
-      const inboxLabelData = await inboxLabelRes.json();
-      inboxTotal = Number.isFinite(inboxLabelData?.messagesTotal)
-        ? inboxLabelData.messagesTotal
+    if (profileRes.ok) {
+      const profileData = await profileRes.json();
+      mailboxTotal = Number.isFinite(profileData?.messagesTotal)
+        ? profileData.messagesTotal
         : 0;
     }
 
@@ -177,8 +177,8 @@ export async function GET(req) {
     }
 
     const listData = await listRes.json();
-    if (!inboxTotal && Number.isFinite(listData?.resultSizeEstimate)) {
-      inboxTotal = listData.resultSizeEstimate;
+    if (!mailboxTotal && Number.isFinite(listData?.resultSizeEstimate)) {
+      mailboxTotal = listData.resultSizeEstimate;
     }
     const messageIds = (listData.messages || []).map(m => m.id);
 
@@ -186,7 +186,8 @@ export async function GET(req) {
       return Response.json({
         summary: {
           emails: [],
-          inbox_total: inboxTotal,
+          inbox_total: mailboxTotal,
+          mailbox_total: mailboxTotal,
           ai_summary: "Your inbox is empty!",
           categories: {},
         },
@@ -232,9 +233,10 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        inbox_total: inboxTotal,
+        inbox_total: mailboxTotal,
+        mailbox_total: mailboxTotal,
         inbox_recent_count: emails.length,
-        ai_summary: ai_summary || `You have ${inboxTotal || emails.length} emails in your inbox.`,
+        ai_summary: ai_summary || `You have ${mailboxTotal || emails.length} emails in your mailbox.`,
         categories,
         last_synced: new Date().toISOString()
       }
