@@ -177,6 +177,23 @@ export async function GET(req) {
         : 0;
     }
 
+    // Inbox thread estimate from search endpoint (often closest to Gmail UI count)
+    let inboxUiTotal = 0;
+    const inboxThreadsRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/threads?" + new URLSearchParams({
+        maxResults: "1",
+        q: "in:inbox",
+      }),
+      { headers: { "Authorization": `Bearer ${accessToken}` } }
+    );
+
+    if (inboxThreadsRes.ok) {
+      const inboxThreadsData = await inboxThreadsRes.json();
+      inboxUiTotal = Number.isFinite(inboxThreadsData?.resultSizeEstimate)
+        ? inboxThreadsData.resultSizeEstimate
+        : 0;
+    }
+
     // Fetch recent emails from Gmail API
     const listRes = await fetch(
       "https://gmail.googleapis.com/gmail/v1/users/me/messages?" + new URLSearchParams({
@@ -204,7 +221,8 @@ export async function GET(req) {
       return Response.json({
         summary: {
           emails: [],
-          inbox_total: inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+          inbox_total: inboxUiTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+          inbox_ui_total: inboxUiTotal,
           inbox_messages_total: inboxMessagesTotal,
           inbox_threads_total: inboxThreadsTotal,
           mailbox_total: mailboxTotal,
@@ -253,7 +271,8 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        inbox_total: inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+        inbox_total: inboxUiTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+        inbox_ui_total: inboxUiTotal,
         inbox_messages_total: inboxMessagesTotal,
         inbox_threads_total: inboxThreadsTotal,
         mailbox_total: mailboxTotal,
