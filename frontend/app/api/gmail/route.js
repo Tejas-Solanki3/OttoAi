@@ -145,6 +145,20 @@ export async function GET(req) {
       if (fresh) accessToken = fresh;
     }
 
+    // Fetch exact INBOX total from Gmail labels API
+    let inboxTotal = 0;
+    const inboxLabelRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX",
+      { headers: { "Authorization": `Bearer ${accessToken}` } }
+    );
+
+    if (inboxLabelRes.ok) {
+      const inboxLabelData = await inboxLabelRes.json();
+      inboxTotal = Number.isFinite(inboxLabelData?.messagesTotal)
+        ? inboxLabelData.messagesTotal
+        : 0;
+    }
+
     // Fetch recent emails from Gmail API
     const listRes = await fetch(
       "https://gmail.googleapis.com/gmail/v1/users/me/messages?" + new URLSearchParams({
@@ -163,9 +177,9 @@ export async function GET(req) {
     }
 
     const listData = await listRes.json();
-    const inboxTotal = Number.isFinite(listData?.resultSizeEstimate)
-      ? listData.resultSizeEstimate
-      : 0;
+    if (!inboxTotal && Number.isFinite(listData?.resultSizeEstimate)) {
+      inboxTotal = listData.resultSizeEstimate;
+    }
     const messageIds = (listData.messages || []).map(m => m.id);
 
     if (messageIds.length === 0) {
@@ -219,6 +233,7 @@ export async function GET(req) {
       summary: {
         emails,
         inbox_total: inboxTotal,
+        inbox_recent_count: emails.length,
         ai_summary: ai_summary || `You have ${inboxTotal || emails.length} emails in your inbox.`,
         categories,
         last_synced: new Date().toISOString()

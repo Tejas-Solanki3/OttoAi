@@ -10,6 +10,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
     emails: 0,
+    recentEmails: 0,
     docs: 0,
     upcomingEvents: 0,
     integrationsOn: 0,
@@ -131,6 +132,9 @@ export default function DashboardPage() {
         emails: Number.isFinite(gmailData?.summary?.inbox_total)
           ? gmailData.summary.inbox_total
           : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0),
+        recentEmails: Number.isFinite(gmailData?.summary?.inbox_recent_count)
+          ? gmailData.summary.inbox_recent_count
+          : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0),
         docs: Array.isArray(docsData?.docs) ? docsData.docs.length : 0,
         upcomingEvents: Array.isArray(bookingsData?.events) ? bookingsData.events.length : 0,
         integrationsOn: 0,
@@ -212,11 +216,11 @@ export default function DashboardPage() {
     const workflowScore = Math.min(100, connectedIntegrationsCount * 12 + stats.upcomingEvents * 2)
 
     return [
-      { label: 'Gmail', value: usageMap.get('Gmail') ?? stats.emails },
+      { label: 'Gmail', value: usageMap.get('Gmail') ?? stats.recentEmails },
       { label: 'Google Docs', value: usageMap.get('Google Docs') ?? stats.docs },
       { label: 'Calendar Events', value: stats.upcomingEvents },
       { label: 'Active Integrations', value: connectedIntegrationsCount },
-      { label: 'Product Touchpoints', value: stats.emails + stats.docs + stats.upcomingEvents },
+      { label: 'Product Touchpoints', value: stats.recentEmails + stats.docs + stats.upcomingEvents },
       { label: 'Workflow Score', value: workflowScore },
     ]
   }, [appUsage, stats, connectedIntegrationsCount])
@@ -225,7 +229,7 @@ export default function DashboardPage() {
 
   const platformSummary = useMemo(() => {
     return [
-      { label: 'Product touchpoints', value: stats.emails + stats.docs + stats.upcomingEvents, icon: 'sparkles' },
+      { label: 'Product touchpoints', value: stats.recentEmails + stats.docs + stats.upcomingEvents, icon: 'sparkles' },
       { label: 'Connected apps', value: connectedIntegrationsCount, icon: 'zap' },
       { label: 'Workflow score', value: Math.min(100, connectedIntegrationsCount * 12 + stats.upcomingEvents * 2), icon: 'flame' },
     ]
