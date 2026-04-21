@@ -232,7 +232,8 @@ export async function GET(req) {
     }
 
       // Exact deterministic counts to avoid Gmail estimate mismatch.
-      const exactInboxThreadsTotal = await countGmailThreads(accessToken, "in:inbox");
+      // Primary tab count is what user sees as "1-50 of N" in Gmail header.
+      const exactInboxThreadsTotal = await countGmailThreads(accessToken, "category:primary in:inbox");
       const exactInboxUnreadThreadsTotal = await countGmailThreads(accessToken, "in:inbox is:unread");
 
     // Fetch recent emails from Gmail API
