@@ -36,6 +36,38 @@ async function refreshAccessToken(account, db) {
   return null;
 }
 
+async function countGmailThreads(accessToken, query) {
+  let total = 0;
+  let pageToken = null;
+
+  do {
+    const params = new URLSearchParams({
+      maxResults: "500",
+      q: query,
+      fields: "nextPageToken,threads/id",
+    });
+
+    if (pageToken) {
+      params.set("pageToken", pageToken);
+    }
+
+    const res = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/threads?" + params.toString(),
+      { headers: { "Authorization": `Bearer ${accessToken}` } }
+    );
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+    total += Array.isArray(data?.threads) ? data.threads.length : 0;
+    pageToken = data?.nextPageToken || null;
+  } while (pageToken);
+
+  return total;
+}
+
 function categorizeEmail(from, subject) {
   const f = (from || '').toLowerCase();
   const s = (subject || '').toLowerCase();
@@ -181,7 +213,7 @@ export async function GET(req) {
         : 0;
     }
 
-    // Fetch Primary tab totals (this matches the top-center Gmail count in Primary tab)
+    // Fetch Primary tab totals (fallback only)
     let primaryMessagesTotal = 0;
     let primaryThreadsTotal = 0;
     const primaryLabelRes = await fetch(
@@ -198,6 +230,10 @@ export async function GET(req) {
         ? primaryLabelData.threadsTotal
         : 0;
     }
+
+      // Exact deterministic counts to avoid Gmail estimate mismatch.
+      const exactInboxThreadsTotal = await countGmailThreads(accessToken, "in:inbox");
+      const exactInboxUnreadThreadsTotal = await countGmailThreads(accessToken, "in:inbox is:unread");
 
     // Fetch recent emails from Gmail API
     const listRes = await fetch(
@@ -226,8 +262,12 @@ export async function GET(req) {
       return Response.json({
         summary: {
           emails: [],
-          inbox_total: primaryThreadsTotal || primaryMessagesTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
-          inbox_unread_total: inboxUnreadTotal,
+          inbox_total: Number.isFinite(exactInboxThreadsTotal)
+            ? exactInboxThreadsTotal
+            : (inboxThreadsTotal || inboxMessagesTotal || mailboxTotal),
+          inbox_unread_total: Number.isFinite(exactInboxUnreadThreadsTotal)
+            ? exactInboxUnreadThreadsTotal
+            : inboxUnreadTotal,
           primary_messages_total: primaryMessagesTotal,
           primary_threads_total: primaryThreadsTotal,
           inbox_messages_total: inboxMessagesTotal,
@@ -278,8 +318,12 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        inbox_total: primaryThreadsTotal || primaryMessagesTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
-        inbox_unread_total: inboxUnreadTotal,
+        inbox_total: Number.isFinite(exactInboxThreadsTotal)
+          ? exactInboxThreadsTotal
+          : (inboxThreadsTotal || inboxMessagesTotal || mailboxTotal),
+        inbox_unread_total: Number.isFinite(exactInboxUnreadThreadsTotal)
+          ? exactInboxUnreadThreadsTotal
+          : inboxUnreadTotal,
         primary_messages_total: primaryMessagesTotal,
         primary_threads_total: primaryThreadsTotal,
         inbox_messages_total: inboxMessagesTotal,
