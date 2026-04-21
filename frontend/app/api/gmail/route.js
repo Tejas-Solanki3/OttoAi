@@ -145,7 +145,7 @@ export async function GET(req) {
       if (fresh) accessToken = fresh;
     }
 
-    // Fetch exact mailbox total from Gmail profile API
+    // Fetch exact mailbox totals from Gmail profile API (fallbacks)
     let mailboxTotal = 0;
     const profileRes = await fetch(
       "https://gmail.googleapis.com/gmail/v1/users/me/profile",
@@ -156,6 +156,24 @@ export async function GET(req) {
       const profileData = await profileRes.json();
       mailboxTotal = Number.isFinite(profileData?.messagesTotal)
         ? profileData.messagesTotal
+        : 0;
+    }
+
+    // Fetch INBOX label stats to match what users usually see in Gmail sidebar (threads/conversations)
+    let inboxMessagesTotal = 0;
+    let inboxThreadsTotal = 0;
+    const inboxLabelRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX",
+      { headers: { "Authorization": `Bearer ${accessToken}` } }
+    );
+
+    if (inboxLabelRes.ok) {
+      const inboxLabelData = await inboxLabelRes.json();
+      inboxMessagesTotal = Number.isFinite(inboxLabelData?.messagesTotal)
+        ? inboxLabelData.messagesTotal
+        : 0;
+      inboxThreadsTotal = Number.isFinite(inboxLabelData?.threadsTotal)
+        ? inboxLabelData.threadsTotal
         : 0;
     }
 
@@ -186,7 +204,9 @@ export async function GET(req) {
       return Response.json({
         summary: {
           emails: [],
-          inbox_total: mailboxTotal,
+          inbox_total: inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+          inbox_messages_total: inboxMessagesTotal,
+          inbox_threads_total: inboxThreadsTotal,
           mailbox_total: mailboxTotal,
           ai_summary: "Your inbox is empty!",
           categories: {},
@@ -233,7 +253,9 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        inbox_total: mailboxTotal,
+        inbox_total: inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+        inbox_messages_total: inboxMessagesTotal,
+        inbox_threads_total: inboxThreadsTotal,
         mailbox_total: mailboxTotal,
         inbox_recent_count: emails.length,
         ai_summary: ai_summary || `You have ${mailboxTotal || emails.length} emails in your mailbox.`,
