@@ -163,10 +163,20 @@ export async function GET(req) {
     }
 
     const listData = await listRes.json();
+    const inboxTotal = Number.isFinite(listData?.resultSizeEstimate)
+      ? listData.resultSizeEstimate
+      : 0;
     const messageIds = (listData.messages || []).map(m => m.id);
 
     if (messageIds.length === 0) {
-      return Response.json({ summary: { emails: [], ai_summary: "Your inbox is empty!", categories: {} } });
+      return Response.json({
+        summary: {
+          emails: [],
+          inbox_total: inboxTotal,
+          ai_summary: "Your inbox is empty!",
+          categories: {},
+        },
+      });
     }
 
     // Fetch each email's details
@@ -208,7 +218,8 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        ai_summary: ai_summary || `You have ${emails.length} emails in your inbox.`,
+        inbox_total: inboxTotal,
+        ai_summary: ai_summary || `You have ${inboxTotal || emails.length} emails in your inbox.`,
         categories,
         last_synced: new Date().toISOString()
       }

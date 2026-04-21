@@ -128,7 +128,9 @@ export default function DashboardPage() {
       })
 
       setStats({
-        emails: Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0,
+        emails: Number.isFinite(gmailData?.summary?.inbox_total)
+          ? gmailData.summary.inbox_total
+          : (Array.isArray(gmailData?.summary?.emails) ? gmailData.summary.emails.length : 0),
         docs: Array.isArray(docsData?.docs) ? docsData.docs.length : 0,
         upcomingEvents: Array.isArray(bookingsData?.events) ? bookingsData.events.length : 0,
         integrationsOn: 0,
