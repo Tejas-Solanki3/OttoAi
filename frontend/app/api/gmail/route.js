@@ -159,9 +159,10 @@ export async function GET(req) {
         : 0;
     }
 
-    // Fetch INBOX label stats to match what users usually see in Gmail sidebar (threads/conversations)
+    // Fetch INBOX label stats (includes unread count shown in Gmail sidebar)
     let inboxMessagesTotal = 0;
     let inboxThreadsTotal = 0;
+    let inboxUnreadTotal = 0;
     const inboxLabelRes = await fetch(
       "https://gmail.googleapis.com/gmail/v1/users/me/labels/INBOX",
       { headers: { "Authorization": `Bearer ${accessToken}` } }
@@ -175,22 +176,26 @@ export async function GET(req) {
       inboxThreadsTotal = Number.isFinite(inboxLabelData?.threadsTotal)
         ? inboxLabelData.threadsTotal
         : 0;
+      inboxUnreadTotal = Number.isFinite(inboxLabelData?.messagesUnread)
+        ? inboxLabelData.messagesUnread
+        : 0;
     }
 
-    // Inbox thread estimate from search endpoint (often closest to Gmail UI count)
-    let inboxUiTotal = 0;
-    const inboxThreadsRes = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/threads?" + new URLSearchParams({
-        maxResults: "1",
-        q: "in:inbox",
-      }),
+    // Fetch Primary tab totals (this matches the top-center Gmail count in Primary tab)
+    let primaryMessagesTotal = 0;
+    let primaryThreadsTotal = 0;
+    const primaryLabelRes = await fetch(
+      "https://gmail.googleapis.com/gmail/v1/users/me/labels/CATEGORY_PERSONAL",
       { headers: { "Authorization": `Bearer ${accessToken}` } }
     );
 
-    if (inboxThreadsRes.ok) {
-      const inboxThreadsData = await inboxThreadsRes.json();
-      inboxUiTotal = Number.isFinite(inboxThreadsData?.resultSizeEstimate)
-        ? inboxThreadsData.resultSizeEstimate
+    if (primaryLabelRes.ok) {
+      const primaryLabelData = await primaryLabelRes.json();
+      primaryMessagesTotal = Number.isFinite(primaryLabelData?.messagesTotal)
+        ? primaryLabelData.messagesTotal
+        : 0;
+      primaryThreadsTotal = Number.isFinite(primaryLabelData?.threadsTotal)
+        ? primaryLabelData.threadsTotal
         : 0;
     }
 
@@ -221,8 +226,10 @@ export async function GET(req) {
       return Response.json({
         summary: {
           emails: [],
-          inbox_total: inboxUiTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
-          inbox_ui_total: inboxUiTotal,
+          inbox_total: primaryThreadsTotal || primaryMessagesTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+          inbox_unread_total: inboxUnreadTotal,
+          primary_messages_total: primaryMessagesTotal,
+          primary_threads_total: primaryThreadsTotal,
           inbox_messages_total: inboxMessagesTotal,
           inbox_threads_total: inboxThreadsTotal,
           mailbox_total: mailboxTotal,
@@ -271,8 +278,10 @@ export async function GET(req) {
     return Response.json({
       summary: {
         emails,
-        inbox_total: inboxUiTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
-        inbox_ui_total: inboxUiTotal,
+        inbox_total: primaryThreadsTotal || primaryMessagesTotal || inboxThreadsTotal || inboxMessagesTotal || mailboxTotal,
+        inbox_unread_total: inboxUnreadTotal,
+        primary_messages_total: primaryMessagesTotal,
+        primary_threads_total: primaryThreadsTotal,
         inbox_messages_total: inboxMessagesTotal,
         inbox_threads_total: inboxThreadsTotal,
         mailbox_total: mailboxTotal,
